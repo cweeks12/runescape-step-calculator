@@ -1,14 +1,18 @@
-from flask import Flask
+from flask import Flask, jsonify
+from flask_cors import CORS
 from runescape_step_calculator import RunescapeStepCalculator
 
 
 if __name__ == "__main__":
     app = Flask(__name__)
+    CORS(app)
     step_calculator = RunescapeStepCalculator()
 
     @app.route('/steps/<date>')
     def total_steps_on_date(date):
-        return step_calculator.get_total_steps_for_date(date)
+        response = jsonify({"steps": step_calculator.get_total_steps_for_date(date)})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response
 
     @app.route('/activity-steps/<date>')
     def get_date_data(date):

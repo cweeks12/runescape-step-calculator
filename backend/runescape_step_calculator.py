@@ -1,3 +1,5 @@
+import json
+
 import garminconnect
 import datetime
 
@@ -20,7 +22,7 @@ class RunescapeStepCalculator:
         :return: The total step count
         """
         # This returns an array of length 1, so we need to pull the first value out
-        return str(self.garmin.get_daily_steps(date, date)[0]['totalSteps'])
+        return self.garmin.get_daily_steps(date, date)[0]['totalSteps']
 
     def get_activity_steps_for_date(self, date: datetime.date) -> str:
         """
@@ -70,4 +72,31 @@ class RunescapeStepCalculator:
         :return: Current walking step ratio
         """
         return str(self.walking_ratio)
+
+    def get_activites_for_date(self, date: datetime.date) -> list[dict[str]]:
+        parsed_activities = []
+        for activity in self.garmin.get_activities_fordate(str(date))['ActivitiesForDay']['payload']:
+            parsed_activities.append(self._parse_activity(activity))
+        return parsed_activities
+
+    @staticmethod
+    def _parse_activity(activity: dict[str]) -> dict[str]:
+        keys_to_return = [
+            'distance',
+            'duration',
+            'calories',
+            'steps',
+            'duration'
+        ]
+        parsed_dictionary = dict()
+
+        for key in keys_to_return:
+            parsed_dictionary[key] = activity[key]
+
+        return parsed_dictionary
+
+
+if __name__ == '__main__':
+    calc = RunescapeStepCalculator()
+    print(json.dumps(calc.get_activites_for_date(datetime.date.today()), indent=2))
 
